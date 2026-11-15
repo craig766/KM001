@@ -1,5 +1,6 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <dt-bindings/zmk/keys.h>
+#include <zephyr/dt-bindings/pinctrl/nrf-pinctrl.h>
 
 / {
     chosen {
@@ -7,16 +8,17 @@
         zmk,matrix_transform = &default_transform;
     };
 
-    // 你定制的复位引脚：16脚 (P0.08)
-    reset-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
-
-    // 矩阵 5行 x 20列
+    // 5行 x 20列 矩阵，全量填满，防止编译器报错
     default_transform: keymap_transform_0 {
         compatible = "zmk,matrix-transform";
         columns = <20>;
         rows = <5>;
         map = <
-            // 这里留空，你在写 .keymap 文件的时候，按这个 5x20 的顺序填键位
+            RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5) RC(0,6) RC(0,7) RC(0,8) RC(0,9) RC(0,10) RC(0,11) RC(0,12) RC(0,13) RC(0,14) RC(0,15) RC(0,16) RC(0,17) RC(0,18) RC(0,19)
+            RC(1,0) RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5) RC(1,6) RC(1,7) RC(1,8) RC(1,9) RC(1,10) RC(1,11) RC(1,12) RC(1,13) RC(1,14) RC(1,15) RC(1,16) RC(1,17) RC(1,18) RC(1,19)
+            RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5) RC(2,6) RC(2,7) RC(2,8) RC(2,9) RC(2,10) RC(2,11) RC(2,12) RC(2,13) RC(2,14) RC(2,15) RC(2,16) RC(2,17) RC(2,18) RC(2,19)
+            RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,6) RC(3,7) RC(3,8) RC(3,9) RC(3,10) RC(3,11) RC(3,12) RC(3,13) RC(3,14) RC(3,15) RC(3,16) RC(3,17) RC(3,18) RC(3,19)
+            RC(4,0) RC(4,1) RC(4,2) RC(4,3) RC(4,4) RC(4,5) RC(4,6) RC(4,7) RC(4,8) RC(4,9) RC(4,10) RC(4,11) RC(4,12) RC(4,13) RC(4,14) RC(4,15) RC(4,16) RC(4,17) RC(4,18) RC(4,19)
         >;
     };
 
@@ -24,45 +26,57 @@
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row";
 
-        // 【为你定制的 595 乱序映射表】
         col-gpios = 
-            <&shift_reg 4 GPIO_ACTIVE_HIGH>,  // COL0  -> Q4
-            <&shift_reg 5 GPIO_ACTIVE_HIGH>,  // COL1  -> Q5
-            <&shift_reg 6 GPIO_ACTIVE_HIGH>,  // COL2  -> Q6
-            <&shift_reg 7 GPIO_ACTIVE_HIGH>,  // COL3  -> Q7
-            <&shift_reg 0 GPIO_ACTIVE_HIGH>,  // COL4  -> Q0
-            <&shift_reg 1 GPIO_ACTIVE_HIGH>,  // COL5  -> Q1
-            <&shift_reg 2 GPIO_ACTIVE_HIGH>,  // COL6  -> Q2
-            <&shift_reg 3 GPIO_ACTIVE_HIGH>,  // COL7  -> Q3
-            <&shift_reg 11 GPIO_ACTIVE_HIGH>, // COL8  -> Q11
-            <&shift_reg 12 GPIO_ACTIVE_HIGH>, // COL9  -> Q12
-            <&shift_reg 13 GPIO_ACTIVE_HIGH>, // COL10 -> Q13
-            <&shift_reg 14 GPIO_ACTIVE_HIGH>, // COL11 -> Q14
-            <&shift_reg 8 GPIO_ACTIVE_HIGH>,  // COL12 -> Q8
-            <&shift_reg 9 GPIO_ACTIVE_HIGH>,  // COL13 -> Q9
-            <&shift_reg 10 GPIO_ACTIVE_HIGH>, // COL14 -> Q10
-            <&shift_reg 19 GPIO_ACTIVE_HIGH>, // COL15 -> Q19
-            <&shift_reg 23 GPIO_ACTIVE_HIGH>, // COL16 -> Q23
-            <&shift_reg 17 GPIO_ACTIVE_HIGH>, // COL17 -> Q17
-            <&shift_reg 18 GPIO_ACTIVE_HIGH>, // COL18 -> Q18
-            <&shift_reg 21 GPIO_ACTIVE_HIGH>; // COL19 -> Q21
+            <&shift_reg 4 GPIO_ACTIVE_HIGH>,  // COL0
+            <&shift_reg 5 GPIO_ACTIVE_HIGH>,  // COL1
+            <&shift_reg 6 GPIO_ACTIVE_HIGH>,  // COL2
+            <&shift_reg 7 GPIO_ACTIVE_HIGH>,  // COL3
+            <&shift_reg 0 GPIO_ACTIVE_HIGH>,  // COL4
+            <&shift_reg 1 GPIO_ACTIVE_HIGH>,  // COL5
+            <&shift_reg 2 GPIO_ACTIVE_HIGH>,  // COL6
+            <&shift_reg 3 GPIO_ACTIVE_HIGH>,  // COL7
+            <&shift_reg 11 GPIO_ACTIVE_HIGH>, // COL8
+            <&shift_reg 12 GPIO_ACTIVE_HIGH>, // COL9
+            <&shift_reg 13 GPIO_ACTIVE_HIGH>, // COL10
+            <&shift_reg 14 GPIO_ACTIVE_HIGH>, // COL11
+            <&shift_reg 8 GPIO_ACTIVE_HIGH>,  // COL12
+            <&shift_reg 9 GPIO_ACTIVE_HIGH>,  // COL13
+            <&shift_reg 10 GPIO_ACTIVE_HIGH>, // COL14
+            <&shift_reg 19 GPIO_ACTIVE_HIGH>, // COL15
+            <&shift_reg 23 GPIO_ACTIVE_HIGH>, // COL16
+            <&shift_reg 17 GPIO_ACTIVE_HIGH>, // COL17
+            <&shift_reg 18 GPIO_ACTIVE_HIGH>, // COL18
+            <&shift_reg 21 GPIO_ACTIVE_HIGH>; // COL19
 
-        // 行线：按你原理图上的引脚
         row-gpios = 
-            <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,  // ROW0 = 14脚 (P0.06)
-            <&gpio0 26 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW1 = 12脚 (P0.26)
-            <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW2 = 10脚 (P0.29)
-            <&gpio0 31 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW3 = 9脚 (P0.31)
-            <&gpio0 30 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; // ROW4 = 8脚 (P0.30)
+            <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,  // ROW0 = 14脚
+            <&gpio0 26 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW1 = 12脚
+            <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW2 = 10脚
+            <&gpio0 31 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW3 = 9脚
+            <&gpio0 30 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; // ROW4 = 8脚
+    };
+
+    // 主灯带：使用单独的 GPIO 模拟，不占用 SPI
+    led_strip: led_strip {
+        compatible = "worldsemi,ws2812-gpio";
+        chain-length = <96>;
+        gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>; // 2脚 (P1.10)
+    };
+
+    // 电池检测
+    vbatt {
+        compatible = "zmk,battery-voltage-divider";
+        io-channels = <&adc 3>; // AI3
+        output-ohms = <100000>;
+        full-ohms = <(200000 + 100000)>;
     };
 };
 
-// 强行映射 SPI1 的引脚给 595 使用
 &pinctrl {
     spi1_default: spi1_default {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 24)>,   // SR_CLK  = 35脚 (P0.24)
-                    <NRF_PSEL(SPIM_MOSI, 0, 18)>;  // SR_DATA = 26脚 (P0.18)
+            psels = <NRF_PSEL(SPIM_SCK, 0, 24)>,   // SR_CLK = 35脚
+                    <NRF_PSEL(SPIM_MOSI, 0, 18)>;  // SR_DATA = 26脚
         };
     };
     spi1_sleep: spi1_sleep {
@@ -79,7 +93,7 @@
     pinctrl-0 = <&spi1_default>;
     pinctrl-1 = <&spi1_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>; // SR_LATCH = 33脚 (P0.13)
+    cs-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>; // SR_LATCH = 33脚
 
     shift_reg: 74HC595@0 {
         compatible = "zmk,gpio-595";
@@ -88,15 +102,6 @@
         spi-max-frequency = <1000000>;
         reg = <0>;
         #gpio-cells = <2>;
-        ngpios = <24>; // 3片，共24个输出
-    };
-};
-
-// 灯带配置（走独立GPIO，用2脚 P1.10）
-/ {
-    led_strip: led_strip {
-        compatible = "worldsemi,ws2812-gpio";
-        chain-length = <96>;
-        gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+        ngpios = <24>; // 3片级联
     };
 };
