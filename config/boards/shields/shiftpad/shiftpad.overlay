@@ -1,87 +1,102 @@
 #include <dt-bindings/zmk/matrix_transform.h>
-
-&xiao_spi {
-    status = "okay";
-    cs-gpios = <&xiao_d 7 GPIO_ACTIVE_LOW>;
-    shift_reg: 74HC595@0 {
-        compatible = "zmk,gpio-595";
-        status = "okay";
-        gpio-controller;
-        spi-max-frequency = <200000>;
-        reg = <0>;
-        #gpio-cells = <2>;
-        ngpios = <8>;
-    };
-};
-
-&xiao_serial { status = "disabled"; };
-
-&xiao_i2c {
-    status = "okay";
-
-    oled: ssd1306@3c {
-        compatible = "solomon,ssd1306fb";
-        reg = <0x3c>;
-        width = <128>;
-        height = <64>;
-        segment-offset = <0>;
-        page-offset = <0>;
-        display-offset = <0>;
-        multiplex-ratio = <63>;
-        prechargep = <0x22>;
-        segment-remap;
-        com-invdir;
-    };
-};
+#include <dt-bindings/zmk/keys.h>
 
 / {
     chosen {
-        zephyr,display = &oled;
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
+    };
+
+    // 你定制的复位引脚：16脚 (P0.08)
+    reset-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+
+    // 矩阵 5行 x 20列
+    default_transform: keymap_transform_0 {
+        compatible = "zmk,matrix-transform";
+        columns = <20>;
+        rows = <5>;
+        map = <
+            // 这里留空，你在写 .keymap 文件的时候，按这个 5x20 的顺序填键位
+        >;
     };
 
     kscan0: kscan_0 {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row";
 
-        col-gpios
-            = <&shift_reg 1 (GPIO_ACTIVE_HIGH)>
-            , <&shift_reg 2 (GPIO_ACTIVE_HIGH)>
-            , <&shift_reg 3 (GPIO_ACTIVE_HIGH)>
-            ;
+        // 【为你定制的 595 乱序映射表】
+        col-gpios = 
+            <&shift_reg 4 GPIO_ACTIVE_HIGH>,  // COL0  -> Q4
+            <&shift_reg 5 GPIO_ACTIVE_HIGH>,  // COL1  -> Q5
+            <&shift_reg 6 GPIO_ACTIVE_HIGH>,  // COL2  -> Q6
+            <&shift_reg 7 GPIO_ACTIVE_HIGH>,  // COL3  -> Q7
+            <&shift_reg 0 GPIO_ACTIVE_HIGH>,  // COL4  -> Q0
+            <&shift_reg 1 GPIO_ACTIVE_HIGH>,  // COL5  -> Q1
+            <&shift_reg 2 GPIO_ACTIVE_HIGH>,  // COL6  -> Q2
+            <&shift_reg 3 GPIO_ACTIVE_HIGH>,  // COL7  -> Q3
+            <&shift_reg 11 GPIO_ACTIVE_HIGH>, // COL8  -> Q11
+            <&shift_reg 12 GPIO_ACTIVE_HIGH>, // COL9  -> Q12
+            <&shift_reg 13 GPIO_ACTIVE_HIGH>, // COL10 -> Q13
+            <&shift_reg 14 GPIO_ACTIVE_HIGH>, // COL11 -> Q14
+            <&shift_reg 8 GPIO_ACTIVE_HIGH>,  // COL12 -> Q8
+            <&shift_reg 9 GPIO_ACTIVE_HIGH>,  // COL13 -> Q9
+            <&shift_reg 10 GPIO_ACTIVE_HIGH>, // COL14 -> Q10
+            <&shift_reg 19 GPIO_ACTIVE_HIGH>, // COL15 -> Q19
+            <&shift_reg 23 GPIO_ACTIVE_HIGH>, // COL16 -> Q23
+            <&shift_reg 17 GPIO_ACTIVE_HIGH>, // COL17 -> Q17
+            <&shift_reg 18 GPIO_ACTIVE_HIGH>, // COL18 -> Q18
+            <&shift_reg 21 GPIO_ACTIVE_HIGH>; // COL19 -> Q21
 
-        row-gpios
-            = <&xiao_d 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&xiao_d 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            ;
-    };
-
-    default_transform: keymap_transform_0 {
-        compatible = "zmk,matrix-transform";
-        columns = <3>;
-        rows = <2>;
-        map = <
-RC(0,0) RC(0,1) RC(0,2)
-RC(1,0) RC(1,1) RC(1,2)
-        >;
-    };
-
-    left_encoder: left_encoder {
-        compatible = "alps,ec11";
-        a-gpios = <&xiao_d 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        b-gpios = <&xiao_d 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        steps = <80>;
-        status = "disabled";
-    };
-
-    sensors: sensors {
-        compatible = "zmk,keymap-sensors";
-        sensors = <&left_encoder>;
-        triggers-per-rotation = <20>;
+        // 行线：按你原理图上的引脚
+        row-gpios = 
+            <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>,  // ROW0 = 14脚 (P0.06)
+            <&gpio0 26 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW1 = 12脚 (P0.26)
+            <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW2 = 10脚 (P0.29)
+            <&gpio0 31 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>, // ROW3 = 9脚 (P0.31)
+            <&gpio0 30 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; // ROW4 = 8脚 (P0.30)
     };
 };
 
-&left_encoder {
+// 强行映射 SPI1 的引脚给 595 使用
+&pinctrl {
+    spi1_default: spi1_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 24)>,   // SR_CLK  = 35脚 (P0.24)
+                    <NRF_PSEL(SPIM_MOSI, 0, 18)>;  // SR_DATA = 26脚 (P0.18)
+        };
+    };
+    spi1_sleep: spi1_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 24)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 18)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi1 {
     status = "okay";
+    pinctrl-0 = <&spi1_default>;
+    pinctrl-1 = <&spi1_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>; // SR_LATCH = 33脚 (P0.13)
+
+    shift_reg: 74HC595@0 {
+        compatible = "zmk,gpio-595";
+        status = "okay";
+        gpio-controller;
+        spi-max-frequency = <1000000>;
+        reg = <0>;
+        #gpio-cells = <2>;
+        ngpios = <24>; // 3片，共24个输出
+    };
+};
+
+// 灯带配置（走独立GPIO，用2脚 P1.10）
+/ {
+    led_strip: led_strip {
+        compatible = "worldsemi,ws2812-gpio";
+        chain-length = <96>;
+        gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+    };
 };
